@@ -35,8 +35,6 @@ public class DelegateProxy : _RXDelegateProxy {
     */
     public required init(parentObject: AnyObject) {
         self.parentObject = parentObject
-        
-        MainScheduler.ensureExecutingOnScheduler()
 #if TRACE_RESOURCES
         OSAtomicIncrement32(&resourceCount)
 #endif
