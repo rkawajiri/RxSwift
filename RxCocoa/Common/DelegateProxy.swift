@@ -23,6 +23,7 @@ public class DelegateProxy : _RXDelegateProxy {
 
     internal static let operationQueue: NSOperationQueue = {
         let operationQueue = NSOperationQueue()
+        operationQueue.name = "ReactiveX.RxCocoa.DelegateProxy"
         operationQueue.maxConcurrentOperationCount = 1
         return operationQueue
     } ()
