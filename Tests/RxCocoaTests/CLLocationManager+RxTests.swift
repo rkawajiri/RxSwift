@@ -176,6 +176,8 @@ extension CLLocationManagerTests {
 
         let targetValue = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 90, longitude: 180), radius: 10, identifier: "unit tests in cloud")
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -183,12 +185,14 @@ extension CLLocationManagerTests {
                     value = n
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didEnterRegion: targetValue)
         }
 
         XCTAssertEqual(value, targetValue)
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertTrue(completed)
     }
 
@@ -273,6 +277,8 @@ extension CLLocationManagerTests {
 
         let targetRegion: CLRegion? = nil
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -281,6 +287,7 @@ extension CLLocationManagerTests {
                 error = l.error
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
             })
 
             manager.delegate!.locationManager!(manager, monitoringDidFailForRegion: targetRegion, withError: testError)
@@ -288,6 +295,7 @@ extension CLLocationManagerTests {
 
         XCTAssertEqual(targetRegion, region)
         XCTAssertEqual(error, testError)
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertTrue(completed)
     }
 

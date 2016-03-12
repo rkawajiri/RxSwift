@@ -190,15 +190,21 @@ extension DelegateProxyTest {
         var completed = false
         var deallocated = false
 
+        let completedExpectation = expectationWithDescription("completed")
+        let deallocatedExpectation = expectationWithDescription("deallocated")
+
+
         autoreleasepool {
             _ = control.test.subscribe(onNext: { value in
                 receivedValue = value
             }, onCompleted: {
                 completed = true
+                completedExpectation.fulfill()
             })
 
             _ = (control as! NSObject).rx_deallocated.subscribeNext { _ in
                 deallocated = true
+                deallocatedExpectation.fulfill()
             }
         }
 
@@ -213,6 +219,9 @@ extension DelegateProxyTest {
         autoreleasepool {
             control = nil
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
+
         XCTAssertTrue(deallocated)
         XCTAssertTrue(completed)
     }
