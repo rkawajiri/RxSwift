@@ -216,14 +216,14 @@ func installDelegate<P: DelegateProxyType>(proxy: P, delegate: AnyObject, retain
     
     assert(proxy.forwardToDelegate() === delegate, "Setting of delegate failed")
     
-    return AnonymousDisposable {
-        DelegateProxy.ensureExecutingOnScheduler()
-        
+    return AnonymousDisposable { DelegateProxy.operationQueue.addOperationWithBlock {
         let delegate: AnyObject? = weakDelegate
-        
+
         assert(delegate == nil || proxy.forwardToDelegate() === delegate, "Delegate was changed from time it was first set. Current \(proxy.forwardToDelegate()), and it should have been \(proxy)")
-        
+
         proxy.setForwardToDelegate(nil, retainDelegate: retainDelegate)
+        }
+        DelegateProxy.operationQueue.waitUntilAllOperationsAreFinished()
     }
 }
 
@@ -237,7 +237,7 @@ extension ObservableType {
             // source can't ever end, otherwise it will release the subscriber
             .concat(Observable.never())
             .subscribe { [weak object] (event: Event<E>) in
-                DelegateProxy.ensureExecutingOnScheduler()
+                // DelegateProxy.ensureExecutingOnScheduler()
 
                 if let object = object {
                     assert(proxy === P.currentDelegateFor(object), "Proxy changed from the time it was first set.\nOriginal: \(proxy)\nExisting: \(P.currentDelegateFor(object))")
