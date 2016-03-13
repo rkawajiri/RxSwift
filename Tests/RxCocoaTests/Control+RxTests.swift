@@ -21,6 +21,9 @@ class ControlTests : RxTest {
         var deallocated = false
         var lastReturnedPropertyValue: T!
 
+        let expectationCompleted = expectationWithDescription("completed")
+        let expectationDeallocated = expectationWithDescription("deallocated")
+
         autoreleasepool {
             var control: C! = createControl()
 
@@ -33,15 +36,19 @@ class ControlTests : RxTest {
             }, onCompleted: {
                 completed = true
                 disposable.dispose()
+                expectationCompleted.fulfill()
             })
 
 
             _ = control.rx_deallocated.subscribeNext { _ in
                 deallocated = true
+                expectationDeallocated.fulfill()
             }
 
             control = nil
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertTrue(deallocated)
         XCTAssertTrue(completed)
@@ -57,6 +64,9 @@ class ControlTests : RxTest {
         var deallocated = false
         let outerDisposable = SingleAssignmentDisposable()
 
+        let expectationCompleted = expectationWithDescription("completed")
+        let expectationDeallocated = expectationWithDescription("deallocated")
+
         autoreleasepool {
             let (control, disposable) = createControl()
             let eventObservable = eventSelector(control)
@@ -65,16 +75,20 @@ class ControlTests : RxTest {
 
             }, onCompleted: {
                 completed = true
+                expectationCompleted.fulfill()
             })
 
             _ = control.rx_deallocated.subscribeNext { _ in
                 deallocated = true
+                expectationDeallocated.fulfill()
             }
 
             outerDisposable.disposable = disposable
         }
 
         outerDisposable.dispose()
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertTrue(deallocated)
         XCTAssertTrue(completed)
     }

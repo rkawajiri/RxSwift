@@ -146,7 +146,8 @@ class DelegateProxyTest : RxTest {
         view.delegate = mock
         
         var completed = false
-        
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             XCTAssertTrue(!mock.respondsToSelector("threeDView(threeDView:didGetXXX:"))
             
@@ -157,12 +158,15 @@ class DelegateProxyTest : RxTest {
                 .observe("threeDView:didGetXXX:")
                 .subscribeCompleted {
                     completed = true
+                    expectation.fulfill()
                 }
             
             view.delegate?.threeDView?(view, didGetXXX: sentArgument)
         }
         XCTAssertTrue(!completed)
+
         view = nil
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertTrue(completed)
     }
 }

@@ -25,6 +25,8 @@ extension CLLocationManagerTests {
 
         let targetLocation = CLLocation(latitude: 90, longitude: 180)
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -32,10 +34,13 @@ extension CLLocationManagerTests {
                     location = l[0]
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didUpdateLocations: [targetLocation])
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(location?.coordinate.latitude, targetLocation.coordinate.latitude)
         XCTAssertEqual(location?.coordinate.longitude, targetLocation.coordinate.longitude)
@@ -46,6 +51,8 @@ extension CLLocationManagerTests {
         var completed = false
         var error: NSError?
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -53,10 +60,13 @@ extension CLLocationManagerTests {
                 error = e
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didFailWithError: testError)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(error, testError)
         XCTAssertTrue(completed)
@@ -68,6 +78,8 @@ extension CLLocationManagerTests {
         var completed = false
         var error: NSError?
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -75,10 +87,13 @@ extension CLLocationManagerTests {
                 error = e
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
             })
 
             manager.delegate!.locationManager!(manager, didFinishDeferredUpdatesWithError: testError)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(error, testError)
         XCTAssertTrue(completed)
@@ -88,6 +103,8 @@ extension CLLocationManagerTests {
         var completed = false
         var error: NSError?
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -95,10 +112,13 @@ extension CLLocationManagerTests {
                 error = e
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
             })
 
             manager.delegate!.locationManager!(manager, didFinishDeferredUpdatesWithError: nil)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(error, nil)
         XCTAssertTrue(completed)
@@ -112,6 +132,8 @@ extension CLLocationManagerTests {
         var completed = false
         var updates: ()?
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -119,18 +141,23 @@ extension CLLocationManagerTests {
                     updates = u
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
             })
 
             manager.delegate!.locationManagerDidPauseLocationUpdates!(manager)
         }
 
         XCTAssertTrue(updates != nil)
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertTrue(completed)
     }
 
     func testDidResumeLocationUpdates() {
         var completed = false
         var updates: ()?
+
+        let expectation = expectationWithDescription("")
 
         autoreleasepool {
             let manager = CLLocationManager()
@@ -139,11 +166,13 @@ extension CLLocationManagerTests {
                     updates = ()
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
             })
 
             manager.delegate!.locationManagerDidResumeLocationUpdates!(manager)
         }
 
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertTrue(updates != nil)
         XCTAssertTrue(completed)
     }
@@ -154,6 +183,8 @@ extension CLLocationManagerTests {
 
         let targetHeading = CLHeading()
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -161,10 +192,13 @@ extension CLLocationManagerTests {
                     heading = n
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
             })
 
             manager.delegate!.locationManager!(manager, didUpdateHeading: targetHeading)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(heading, targetHeading)
         XCTAssertTrue(completed)
@@ -202,6 +236,8 @@ extension CLLocationManagerTests {
 
         let targetValue = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 90, longitude: 180), radius: 10, identifier: "unit tests in cloud")
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -209,11 +245,13 @@ extension CLLocationManagerTests {
                     value = n
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didExitRegion: targetValue)
         }
 
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertEqual(value, targetValue)
         XCTAssertTrue(completed)
     }
@@ -228,6 +266,8 @@ extension CLLocationManagerTests {
 
         let targetValue = (CLRegionState.Inside, CLCircularRegion(center: CLLocationCoordinate2D(latitude: 90, longitude: 180), radius: 10, identifier: "unit tests in cloud"))
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -235,10 +275,13 @@ extension CLLocationManagerTests {
                     value = (n.state, n.region)
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didDetermineState: targetValue.0, forRegion: targetValue.1)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(value?.0, targetValue.0)
         XCTAssertEqual(value?.1, targetValue.1)
@@ -252,6 +295,8 @@ extension CLLocationManagerTests {
 
         let targetRegion = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 90, longitude: 180), radius: 10, identifier: "unit tests in cloud")
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -260,10 +305,13 @@ extension CLLocationManagerTests {
                     error = l.error
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, monitoringDidFailForRegion: targetRegion, withError: testError)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(targetRegion, region)
         XCTAssertEqual(error, testError)
@@ -305,6 +353,8 @@ extension CLLocationManagerTests {
 
         let targetValue = CLCircularRegion(center: CLLocationCoordinate2D(latitude: 90, longitude: 180), radius: 10, identifier: "unit tests in cloud")
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -312,10 +362,13 @@ extension CLLocationManagerTests {
                     value = n
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didStartMonitoringForRegion: targetValue)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(value, targetValue)
         XCTAssertTrue(completed)
@@ -333,6 +386,8 @@ extension CLLocationManagerTests {
             CLBeaconRegion(proximityUUID: NSUUID(UUIDString: "68753A44-4D6F-1226-9C60-0050E4C00067")!, identifier: "1231231")
         )
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -340,10 +395,13 @@ extension CLLocationManagerTests {
                     value = n
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didRangeBeacons: targetValue.0, inRegion: targetValue.1)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(value!.0, targetValue.0)
         XCTAssertEqual(value!.1, targetValue.1)
@@ -359,6 +417,8 @@ extension CLLocationManagerTests {
             testError
         )
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -366,10 +426,13 @@ extension CLLocationManagerTests {
                     value = n
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, rangingBeaconsDidFailForRegion: targetValue.0, withError: targetValue.1)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(value!.0, targetValue.0)
         XCTAssertEqual(value!.1, targetValue.1)
@@ -384,6 +447,8 @@ extension CLLocationManagerTests {
             CLVisit()
         )
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -391,11 +456,13 @@ extension CLLocationManagerTests {
                     value = n
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
                 })
 
             manager.delegate!.locationManager!(manager, didVisit: targetValue)
         }
 
+        waitForExpectationsWithTimeout(1.0, handler: nil)
         XCTAssertEqual(value, targetValue)
         XCTAssertTrue(completed)
     }
@@ -413,6 +480,8 @@ extension CLLocationManagerTests {
         let targetAuthorizationStatus = CLAuthorizationStatus.Authorized
         #endif
 
+        let expectation = expectationWithDescription("")
+
         autoreleasepool {
             let manager = CLLocationManager()
 
@@ -420,10 +489,13 @@ extension CLLocationManagerTests {
                     authorizationStatus = status
                 }, onCompleted: {
                     completed = true
+                    expectation.fulfill()
             })
 
             manager.delegate!.locationManager!(manager, didChangeAuthorizationStatus:targetAuthorizationStatus)
         }
+
+        waitForExpectationsWithTimeout(1.0, handler: nil)
 
         XCTAssertEqual(authorizationStatus, targetAuthorizationStatus)
         XCTAssertTrue(completed)
