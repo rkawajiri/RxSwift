@@ -168,16 +168,13 @@ Returns existing proxy for object or installs new instance of delegate proxy.
 */
 public func proxyForObject<P: DelegateProxyType>(type: P.Type, _ object: AnyObject) -> P {
     var proxy: P! = nil
-    DelegateProxy.operationQueue.addOperationWithBlock {
+    _on_main_thread {
         proxy = _proxyForObject(type, object)
     }
-    DelegateProxy.operationQueue.waitUntilAllOperationsAreFinished()
     return proxy
 }
 
 private func _proxyForObject<P: DelegateProxyType>(type: P.Type, _ object: AnyObject) -> P {
-    DelegateProxy.ensureExecutingOnScheduler()
-
     let maybeProxy = P.assignedProxyFor(object) as? P
     
     let proxy: P
@@ -216,14 +213,13 @@ func installDelegate<P: DelegateProxyType>(proxy: P, delegate: AnyObject, retain
     
     assert(proxy.forwardToDelegate() === delegate, "Setting of delegate failed")
     
-    return AnonymousDisposable { DelegateProxy.operationQueue.addOperationWithBlock {
+    return AnonymousDisposable { _on_main_thread {
         let delegate: AnyObject? = weakDelegate
 
         assert(delegate == nil || proxy.forwardToDelegate() === delegate, "Delegate was changed from time it was first set. Current \(proxy.forwardToDelegate()), and it should have been \(proxy)")
 
         proxy.setForwardToDelegate(nil, retainDelegate: retainDelegate)
         }
-        DelegateProxy.operationQueue.waitUntilAllOperationsAreFinished()
     }
 }
 
@@ -236,15 +232,13 @@ extension ObservableType {
         let subscription = self.asObservable()
             // source can't ever end, otherwise it will release the subscriber
             .concat(Observable.never())
-            .subscribe { [weak object] (event: Event<E>) in
-                // DelegateProxy.ensureExecutingOnScheduler()
-
+            .subscribe { [weak object] (event: Event<E>) in _on_main_thread() {
                 if let object = object {
                     assert(proxy === P.currentDelegateFor(object), "Proxy changed from the time it was first set.\nOriginal: \(proxy)\nExisting: \(P.currentDelegateFor(object))")
                 }
-                
+
                 binding(proxy, event)
-                
+
                 switch event {
                 case .Error(let error):
                     bindingErrorToInterface(error)
@@ -254,8 +248,19 @@ extension ObservableType {
                 default:
                     break
                 }
+                }
             }
             
         return StableCompositeDisposable.create(subscription, disposable)
+    }
+}
+
+private func _on_main_thread(block: () -> Void) {
+    if NSThread.currentThread().isMainThread {
+        block()
+    } else {
+        dispatch_sync(dispatch_get_main_queue()) {
+            block()
+        }
     }
 }

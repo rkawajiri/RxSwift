@@ -21,19 +21,6 @@ This implementation is not thread safe and can be used only from one thread (Mai
 */
 public class DelegateProxy : _RXDelegateProxy {
 
-    internal static let operationQueue: NSOperationQueue = {
-        let operationQueue = NSOperationQueue()
-        operationQueue.name = "ReactiveX.RxCocoa.DelegateProxy"
-        operationQueue.maxConcurrentOperationCount = 1
-        return operationQueue
-    } ()
-    internal static let scheduler = OperationQueueScheduler(operationQueue: operationQueue)
-    public static func ensureExecutingOnScheduler() {
-        guard let current = NSOperationQueue.currentQueue() where current == operationQueue else {
-            rxFatalError("")
-        }
-    }
-
     private var subjectsForSelector = [Selector: PublishSubject<[AnyObject]>]()
 
     /**
@@ -49,7 +36,7 @@ public class DelegateProxy : _RXDelegateProxy {
     public required init(parentObject: AnyObject) {
         self.parentObject = parentObject
 
-        DelegateProxy.ensureExecutingOnScheduler()
+        MainScheduler.ensureExecutingOnScheduler()
 #if TRACE_RESOURCES
         OSAtomicIncrement32(&resourceCount)
 #endif
