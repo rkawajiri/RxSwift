@@ -167,8 +167,14 @@ Returns existing proxy for object or installs new instance of delegate proxy.
     }
 */
 public func proxyForObject<P: DelegateProxyType>(type: P.Type, _ object: AnyObject) -> P {
-    MainScheduler.ensureExecutingOnScheduler()
-    
+    var proxy: P!
+    _on_main_thread() {
+        proxy = _proxyForObject(type, object)
+    }
+    return proxy
+}
+
+public func _proxyForObject<P: DelegateProxyType>(type: P.Type, _ object: AnyObject) -> P {
     let maybeProxy = P.assignedProxyFor(object) as? P
     
     let proxy: P
@@ -208,13 +214,13 @@ func installDelegate<P: DelegateProxyType>(proxy: P, delegate: AnyObject, retain
     assert(proxy.forwardToDelegate() === delegate, "Setting of delegate failed")
     
     return AnonymousDisposable {
-        MainScheduler.ensureExecutingOnScheduler()
-        
+        _on_main_thread() {
         let delegate: AnyObject? = weakDelegate
         
         assert(delegate == nil || proxy.forwardToDelegate() === delegate, "Delegate was changed from time it was first set. Current \(proxy.forwardToDelegate()), and it should have been \(proxy)")
         
         proxy.setForwardToDelegate(nil, retainDelegate: retainDelegate)
+        }
     }
 }
 
@@ -228,8 +234,7 @@ extension ObservableType {
             // source can't ever end, otherwise it will release the subscriber
             .concat(Observable.never())
             .subscribe { [weak object] (event: Event<E>) in
-                MainScheduler.ensureExecutingOnScheduler()
-
+                _on_main_thread() {
                 if let object = object {
                     assert(proxy === P.currentDelegateFor(object), "Proxy changed from the time it was first set.\nOriginal: \(proxy)\nExisting: \(P.currentDelegateFor(object))")
                 }
@@ -245,8 +250,19 @@ extension ObservableType {
                 default:
                     break
                 }
+                }
             }
             
         return StableCompositeDisposable.create(subscription, disposable)
+    }
+}
+
+private func _on_main_thread(block: () -> Void) {
+    if NSThread.currentThread().isMainThread {
+        block()
+    } else {
+        dispatch_sync(dispatch_get_main_queue()) {
+            block()
+        }
     }
 }
